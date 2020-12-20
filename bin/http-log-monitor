@@ -1,1 +1,28 @@
 #!/usr/bin/env python3
+import os
+import sys
+import argparse
+import time
+from queue import Queue
+
+from http_log_monitor.reader import Reader
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', type=str, default='access.log')
+    args = parser.parse_args()
+
+    try:
+        if not os.path.isfile(args.file):
+            raise FileNotFoundError
+        
+        shared_queue = Queue()
+        reader = Reader(file_path=args.file, queue=shared_queue)
+        reader.start()
+        while True:
+            time.sleep(5)
+    except FileNotFoundError:
+        print(f"File not found {args.file}")
+    except KeyboardInterrupt:
+        print('...Stoping service')
+        sys.exit(0)

@@ -4,6 +4,8 @@ import argparse
 import random
 import sched
 import time
+from os import SEEK_END
+
 from time import strftime, gmtime
 from datetime import datetime
 from random import choice, randint
@@ -19,7 +21,7 @@ class LogGenerator:
         log_line = (
             f"{self._generate_remote_host()} "
             f"{self._generate_user_id()} "
-            f"{self._generate_user()} "
+            f"{self._generate_user_name()} "
             f"[{self._generate_date()}] "
             f"\"{self._generate_request_method()} {self._generate_request_resource()} {self._generate_request_protocol()}\" "
             f"{self._generate_response_type()} {self._generate_response_bytes()} \n"
@@ -27,7 +29,7 @@ class LogGenerator:
         file.write(log_line)
         file.flush()
         
-        # Recusively add new entries
+        # Recursively add new entries
         scheduler.enter(round(random.uniform(0,1), 2), 0, self.generate_log_line, (_, ))
 
     def _generate_remote_host(self):
@@ -36,7 +38,7 @@ class LogGenerator:
     def _generate_user_id(self):
         return "-"
 
-    def _generate_user(self) -> str:
+    def _generate_user_name(self) -> str:
         return choice(["user1", "user2", "user3"])
 
     def _generate_date(self) -> str:
@@ -46,7 +48,7 @@ class LogGenerator:
         return choice(["GET", "POST", "PUT", "PATCH"])
 
     def _generate_request_resource(self) -> str:
-        return choice(["users/1", "orders/pages=1", "/customers" "/customers/1/edit", "/login", ])
+        return choice(["/", "/users/1", "/orders/pages=1", "/customers" "/customers/1/edit", "/login", ])
 
     def _generate_request_protocol(self) -> str:
         return "HTTP/1.0"
@@ -61,16 +63,15 @@ class LogGenerator:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=str, default='/tmp/access.log')
-    # parser.add_argument('--max_per_second', type=int, default=1)
     
     args = parser.parse_args()
     file = open(args.output, 'a')
     
     # move the current position at the end of the file(seek(0,2))
-    file.seek(0, 2)
+    file.seek(0, SEEK_END)
 
     log_generator = LogGenerator()
-    
+
     try:
         scheduler = sched.scheduler(time.time, time.sleep)
         scheduler.enter(0, 0, log_generator.generate_log_line, (scheduler,))
