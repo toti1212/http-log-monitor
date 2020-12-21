@@ -3,10 +3,9 @@
 from threading import Thread
 from os import SEEK_END
 import re
-import logging
 import time
 from queue import Queue
-logger = logging.getLogger(__name__)
+
 
 
 class Reader(Thread):
@@ -23,7 +22,7 @@ class Reader(Thread):
         self.queue = queue
 
     def run(self):
-        file = open(self.file_path, 'r')
+        file = open(self.file_path, "r")
         file.seek(0, 2)
 
         while True:
@@ -47,7 +46,9 @@ class Reader(Thread):
             parsed_request = self._parse_request_entry(parsed_log_line.pop("request"))
             parsed_log_line.update(parsed_request)
 
-            parsed_request_resource = self._parse_request_resource_entry(parsed_request.get("resource"))
+            parsed_request_resource = self._parse_request_resource_entry(
+                parsed_request.get("resource")
+            )
             parsed_log_line.update({"resource_base_path": parsed_request_resource})
 
             return parsed_log_line
@@ -58,26 +59,22 @@ class Reader(Thread):
 
     def _parse_log_entry(self, line: str) -> dict:
         log_parts = [
-            r'(?P<remote_host>\S*)',
-            r'(?P<user_id>\S*)',
-            r'(?P<user_name>\S*)',
-            r'\[(?P<datetime>.*?)\]',
+            r"(?P<remote_host>\S*)",
+            r"(?P<user_id>\S*)",
+            r"(?P<user_name>\S*)",
+            r"\[(?P<datetime>.*?)\]",
             r'"(?P<request>.+)"',
-            r'(?P<response_type>\d*)',
-            r'(?P<response_size>\d*)'
+            r"(?P<response_type>\d*)",
+            r"(?P<response_size>\d*)",
         ]
 
-        log_pattern = re.compile(r'\s+'.join(log_parts)+r'\s*')
+        log_pattern = re.compile(r"\s+".join(log_parts) + r"\s*")
         matching_pattern_log = log_pattern.match(line)
         return matching_pattern_log.groupdict()
 
     def _parse_request_entry(self, request_line: str) -> dict:
-        request_parts = [
-            r'(?P<method>\S+)',
-            r'(?P<resource>\S+)',
-            r'(?P<protocol>\S+)'
-        ]
-        request_pattern = re.compile(r'\s+'.join(request_parts)+r'\s*')
+        request_parts = [r"(?P<method>\S+)", r"(?P<resource>\S+)", r"(?P<protocol>\S+)"]
+        request_pattern = re.compile(r"\s+".join(request_parts) + r"\s*")
         matching_pattern_request = request_pattern.match(request_line)
         return matching_pattern_request.groupdict()
 
@@ -85,6 +82,6 @@ class Reader(Thread):
         parsed_request_resource = request_resource.split("/")
         if len(parsed_request_resource) <= 1:
             return ""
-        if parsed_request_resource[1] == '':
+        if parsed_request_resource[1] == "":
             return "/"
         return f"/{parsed_request_resource[1]}"

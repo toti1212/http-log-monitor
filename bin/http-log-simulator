@@ -16,21 +16,17 @@ from threading import Thread
 
 
 class LogGenerator:
-
-    def generate_log_line(self, _):
+    def generate_log_line(self):
         log_line = (
             f"{self._generate_remote_host()} "
             f"{self._generate_user_id()} "
             f"{self._generate_user_name()} "
             f"[{self._generate_date()}] "
-            f"\"{self._generate_request_method()} {self._generate_request_resource()} {self._generate_request_protocol()}\" "
+            f'"{self._generate_request_method()} {self._generate_request_resource()} {self._generate_request_protocol()}" '
             f"{self._generate_response_type()} {self._generate_response_bytes()} \n"
         )
         file.write(log_line)
         file.flush()
-        
-        # Recursively add new entries
-        scheduler.enter(round(random.uniform(0,1), 2), 0, self.generate_log_line, (_, ))
 
     def _generate_remote_host(self):
         return "localhost"
@@ -48,7 +44,15 @@ class LogGenerator:
         return choice(["GET", "POST", "PUT", "PATCH"])
 
     def _generate_request_resource(self) -> str:
-        return choice(["/", "/users/1", "/orders/pages=1", "/customers" "/customers/1/edit", "/login", ])
+        return choice(
+            [
+                "/",
+                "/users/1",
+                "/orders/pages=1",
+                "/customers" "/customers/1/edit",
+                "/login",
+            ]
+        )
 
     def _generate_request_protocol(self) -> str:
         return "HTTP/1.0"
@@ -60,21 +64,27 @@ class LogGenerator:
         return str(randint(50, 500))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', type=str, default='/tmp/access.log')
-    
+    parser.add_argument("--output", type=str, default="/tmp/access.log")
+    parser.add_argument("--wait_between", type=int, default=100)
+
     args = parser.parse_args()
-    file = open(args.output, 'a')
-    
+    file = open(args.output, "a")
+
     # move the current position at the end of the file(seek(0,2))
     file.seek(0, SEEK_END)
 
     log_generator = LogGenerator()
 
     try:
-        scheduler = sched.scheduler(time.time, time.sleep)
-        scheduler.enter(0, 0, log_generator.generate_log_line, (scheduler,))
-        scheduler.run()
+        last_ts = datetime.now()
+        log_generator.generate_log_line()
+        while True:
+            current_ts = datetime.now()
+            diff = (current_ts - last_ts).total_seconds() * 1000  # miliseconds
+            if diff >= args.wait_between:
+                log_generator.generate_log_line()
+                last_ts = datetime.now()
     except KeyboardInterrupt:
         file.close()
