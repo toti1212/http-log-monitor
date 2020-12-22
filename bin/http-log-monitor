@@ -7,21 +7,35 @@ from queue import Queue
 
 from http_log_monitor.reader import Reader
 from http_log_monitor.monitoring.stats import Stats
+from http_log_monitor.displays.cli import Cli
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=str, default="access.log")
+    parser.add_argument("--interval", type=int, default=5)
+    # TODO: Create a display flag (cli by default)
+
     args = parser.parse_args()
 
     try:
         if not os.path.isfile(args.file):
             raise FileNotFoundError
 
+        # display
+        cli_display = Cli()
+
+        # reader
         shared_queue = Queue()
         reader = Reader(file_path=args.file, queue=shared_queue)
         reader.start()
+
+        # monitoring
+        stats = Stats(queue=shared_queue, display=cli_display, threadhold=args.interval, log_path=args.file)
+        stats.start()
+
         while True:
-            time.sleep(5)
+            time.sleep(10)
+
     except FileNotFoundError:
         print(f"File not found {args.file}")
     except KeyboardInterrupt:
