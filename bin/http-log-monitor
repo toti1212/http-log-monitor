@@ -5,14 +5,18 @@ import argparse
 import time
 from queue import Queue
 
+
 from http_log_monitor.reader import Reader
-from http_log_monitor.monitoring.stats import Stats
+from http_log_monitor.monitoring.stats import StatsMonitor
+from http_log_monitor.monitoring.alert import AlertMonitor
 from http_log_monitor.displays.cli import Cli
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=str, default="access.log")
     parser.add_argument("--interval", type=int, default=5)
+    parser.add_argument("--alert_trigger", type=int, default=50)
+    parser.add_argument("--alert_time_window", type=int, default=10)
     # TODO: Create a display flag (cli by default)
 
     args = parser.parse_args()
@@ -23,15 +27,32 @@ if __name__ == "__main__":
 
         # display
         cli_display = Cli()
+        cli_display.start()
 
         # reader
         shared_queue = Queue()
-        reader = Reader(file_path=args.file, queue=shared_queue)
+        alert_queue = Queue()
+        reader = Reader(
+            file_path=args.file, queue=shared_queue, alert_queue=alert_queue
+        )
         reader.start()
 
         # monitoring
-        stats = Stats(queue=shared_queue, display=cli_display, threadhold=args.interval, log_path=args.file)
+        stats = StatsMonitor(
+            queue=shared_queue,
+            display=cli_display,
+            interval=args.interval,
+            log_path=args.file,
+        )
         stats.start()
+
+        alertMonitor = AlertMonitor(
+            alert_queue=alert_queue,
+            display=cli_display,
+            trigger=args.alert_trigger,
+            time_window=args.alert_time_window,
+        )
+        alertMonitor.start()
 
         while True:
             time.sleep(10)

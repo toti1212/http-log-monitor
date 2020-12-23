@@ -7,7 +7,6 @@ import time
 from queue import Queue
 
 
-
 class Reader(Thread):
     """
     Reader module.
@@ -15,11 +14,12 @@ class Reader(Thread):
     to analyze later.
     """
 
-    def __init__(self, file_path: str, queue: Queue):
+    def __init__(self, file_path: str, queue: Queue, alert_queue: Queue):
         super().__init__()
         self.daemon = True
         self.file_path = file_path
         self.queue = queue
+        self.alert_queue = alert_queue
 
     def run(self):
         file = open(self.file_path, "r")
@@ -33,6 +33,7 @@ class Reader(Thread):
                 try:
                     parsed_log_line = self.parse_log_line(line)
                     self.queue.put(parsed_log_line)
+                    self.alert_queue.put(parsed_log_line)
                 except Exception as e:
                     #  TODO: Improve logs
                     print(e)
