@@ -1,16 +1,13 @@
-"""Reader"""
-
-from threading import Thread
-from os import SEEK_END
 import re
 import time
+from os import SEEK_END
 from queue import Queue
+from threading import Thread
 
 
 class Reader(Thread):
     """
-    Reader module.
-    This will watch the a resource constantly and saving the information
+    Reader watch the a resource constantly and saving the information
     to analyze later.
     """
 
@@ -40,7 +37,7 @@ class Reader(Thread):
                     raise
 
     def parse_log_line(self, line: str):
-        # parse log
+        """Parse a log entry read before using patter matching"""
         try:
             parsed_log_line = self._parse_log_entry(line)
 
@@ -54,11 +51,12 @@ class Reader(Thread):
 
             return parsed_log_line
         except Exception as e:
-            # TODO: Improve logs
             print(f"Cannot parse log: {e}")
             raise
 
     def _parse_log_entry(self, line: str) -> dict:
+        """ Log entry separated in sections using regex"""
+        
         log_parts = [
             r"(?P<remote_host>\S*)",
             r"(?P<user_id>\S*)",
@@ -74,12 +72,19 @@ class Reader(Thread):
         return matching_pattern_log.groupdict()
 
     def _parse_request_entry(self, request_line: str) -> dict:
+        """The request section is separable in sub-sections like method,
+        resource and protocol"""
+
         request_parts = [r"(?P<method>\S+)", r"(?P<resource>\S+)", r"(?P<protocol>\S+)"]
         request_pattern = re.compile(r"\s+".join(request_parts) + r"\s*")
         matching_pattern_request = request_pattern.match(request_line)
         return matching_pattern_request.groupdict()
 
     def _parse_request_resource_entry(self, request_resource: str) -> str:
+        """Gets the base path of the accessed resource
+        example: /customers/account -> /customers
+        """
+        
         parsed_request_resource = request_resource.split("/")
         if len(parsed_request_resource) <= 1:
             return ""

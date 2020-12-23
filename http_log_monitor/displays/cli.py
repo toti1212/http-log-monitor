@@ -1,13 +1,17 @@
-from http_log_monitor.monitoring.alert import Alert, AlertType
-from subprocess import call
-from .display import Display
-from datetime import datetime
 import os
-
 import time
+from datetime import datetime
+from subprocess import call
+
+from http_log_monitor.monitoring.alert import Alert, AlertType
+
+from .display import Display
 
 
 class Cli(Display):
+    """Command line display.
+    Show the stats and alarms in the CLI printing the data an cleaning the screen"""
+
     BOLD_TEXT = "\033[1m"
     RESET_TEXT = "\033[0m"
     WELCOME_MSG = " HTTP log monitor program "
@@ -18,13 +22,14 @@ class Cli(Display):
     def __init__(self):
         super().__init__()
         self.alert = None
-        
-        # Welcome msg
+
+        # Starting the display printing the welcome msg
         self._clear()
         self._print_welcome_msg()
 
     def run(self):
         while True:
+            # Refresh the screen every second
             self.refresh_screen()
             time.sleep(1)
 
@@ -34,12 +39,15 @@ class Cli(Display):
         print(self._bold(self.LINE_SEPARATOR))
 
     def _bold(self, text):
+        """Format the text to bold (terminal supported)"""
         return f"{self.BOLD_TEXT}{text}{self.RESET_TEXT}"
 
     def _clear(self):
+        """Clean the screen. OS compatibility"""
         _ = call("clear" if os.name == "posix" else "cls", shell=True)
 
     def refresh_screen(self):
+        """Main function that refresh the screen with new stats and/or alarms"""
         self._clear()
         self._print_welcome_msg()
 
@@ -53,6 +61,7 @@ class Cli(Display):
         self.alert = alert
 
     def print_alert(self):
+        """Depends of the alert type, a text is displayed on the main screen"""
         msg = ""
         if self.alert and self.alert.type == AlertType.HIGH_TRAFFIC:
             msg = f"High traffic generated an alert - hits = {self.alert.hits}, triggered at {self.alert.timestamp}"
@@ -61,6 +70,7 @@ class Cli(Display):
         print(self._bold(msg))
 
     def print_stats(self):
+        """Displays stats in a nice way"""
         # TODO: improve real time updates
         print(f"{self._bold('Time:')} {datetime.now().strftime(self.DATE_FORMAT)}")
         print(f"{self._bold('Log path:')} {self.stats.get('log_path')}")

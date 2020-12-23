@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestLogSimulator(unittest.TestCase):
 
     def test_dummy(self):

@@ -1,10 +1,11 @@
-from threading import Thread, Lock
 import time
-from typing import List
-from http_log_monitor.displays.display import Display
+from datetime import datetime
 from enum import Enum
 from queue import Queue
-from datetime import datetime
+from threading import Lock, Thread
+from typing import List
+
+from http_log_monitor.displays.display import Display
 
 
 class AlertType(Enum):
@@ -20,6 +21,9 @@ class Alert:
 
 
 class AlertMonitor(Thread):
+     """Alert monitor generates alarms if it detects a lot of traffic, 
+     measuring the number of visits in a time window and comparing them with a threshold"""
+    
     def __init__(
         self, alert_queue: Queue, display: Display, time_window: int, trigger: int
     ):
@@ -49,9 +53,10 @@ class AlertMonitor(Thread):
                 self.alert_active = False
 
             self.watch_alert_list_time_window()
-            time.sleep(0.25)
 
     def watch_alert_list_time_window(self):
+        """Move the log entries form the queue to a list to manipulate better the older entries"""
+        
         while not self.alert_queue.empty():
             entry = self.alert_queue.get()
             self.alert_list.append(entry)
@@ -62,7 +67,7 @@ class AlertMonitor(Thread):
         Time window algorithm.
         We need to keep only the entries that are useful in the time_window interval.
         """
-        # TODO: Improve datetimes
+        
         current_ts = datetime.now()
         for entry in self.alert_list:
             entry_ts = datetime.strptime(entry.get("datetime"), "%d/%b/%Y:%X")

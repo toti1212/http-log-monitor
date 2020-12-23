@@ -4,15 +4,13 @@ import argparse
 import random
 import sched
 import time
-from os import SEEK_END
-
-from time import strftime, gmtime
 from datetime import datetime
+from os import SEEK_END
 from random import choice, randint
+from threading import Thread
+from time import gmtime, strftime
 
 import pytz as pytz
-
-from threading import Thread
 
 
 class LogGenerator:
