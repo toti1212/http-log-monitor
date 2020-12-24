@@ -3,6 +3,7 @@ from datetime import datetime
 from random import choice, randint
 from time import gmtime, strftime
 
+
 class LogGenerator:
     def generate_log_entry(self):
         log_line = (

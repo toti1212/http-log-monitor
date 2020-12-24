@@ -2,8 +2,8 @@
 
 import argparse
 import random
-from os import SEEK_END
 from datetime import datetime
+from os import SEEK_END
 
 from http_log_monitor.simulator import LogGenerator
 
