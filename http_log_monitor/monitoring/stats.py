@@ -44,6 +44,7 @@ class StatsMonitor(Thread):
         stats = {
             "log_path": self.log_path,
             "top_hits": top_hits,
+            "hits_per_sec": round(self.total_logs_read / self.interval, 2),
             "total_logs_read": self.total_logs_read,
             "interval": self.interval,
         }

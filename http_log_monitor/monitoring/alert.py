@@ -29,6 +29,7 @@ class AlertMonitor(Thread):
     ):
         super().__init__()
         self.daemon = True
+        self.lock = Lock()
 
         self.alert_queue = alert_queue
         self.alert_active = False
@@ -41,36 +42,46 @@ class AlertMonitor(Thread):
         while True:
             self._update_alert_list()
             hits = len(self.alert_list)
-
-            if not self.alert_active and hits / self.time_window > self.trigger:
+            hits_avg =  round(hits / self.time_window)
+            
+            if not self.alert_active and hits_avg >= self.trigger:
                 self.display.set_alert(
                     Alert(AlertType.HIGH_TRAFFIC, datetime.now(), hits)
                 )
                 self.alert_active = True
 
-            elif self.alert_active and hits / self.time_window < self.trigger:
+            elif self.alert_active and hits_avg < self.trigger:
                 self.display.set_alert(Alert(AlertType.RECOVER, datetime.now(), None))
                 self.alert_active = False
 
             self.watch_alert_list_time_window()
-
+        time.sleep(0.2)
+    
     def watch_alert_list_time_window(self):
         """Move the log entries form the queue to a list to manipulate better the older entries"""
         
         while not self.alert_queue.empty():
             entry = self.alert_queue.get()
+            self.lock.acquire()
             self.alert_list.append(entry)
+            self.lock.release()
+            
             self._update_alert_list()
+
 
     def _update_alert_list(self):
         """
         Time window algorithm.
         We need to keep only the entries that are useful in the time_window interval.
         """
-
         current_ts = datetime.now()
         for entry in self.alert_list:
             entry_ts = datetime.strptime(entry.get("datetime"), "%d/%b/%Y:%X")
             if (current_ts - entry_ts).total_seconds() > self.time_window:
+                self.lock.acquire()
                 self.alert_list.remove(entry)
+                self.lock.release()
+            else:
+                return
+
 

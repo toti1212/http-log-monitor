@@ -22,7 +22,6 @@ class Cli(Display):
     def __init__(self):
         super().__init__()
         self.alert = None
-
         # Starting the display printing the welcome msg
         self._clear()
         self._print_welcome_msg()
@@ -66,7 +65,9 @@ class Cli(Display):
         if self.alert and self.alert.type == AlertType.HIGH_TRAFFIC:
             msg = f"High traffic generated an alert - hits = {self.alert.hits}, triggered at {self.alert.timestamp}"
         elif self.alert and self.alert.type == AlertType.RECOVER:
-            msg = f"Traffic on normal params"
+            msg = (
+                f"High traffic alert disabled. Back to normal at {self.alert.timestamp}"
+            )
         print(self._bold(msg))
 
     def print_stats(self):
@@ -76,6 +77,7 @@ class Cli(Display):
         print(f"{self._bold('Log path:')} {self.stats.get('log_path')}")
         print(f"{self._bold('Interval:')} {self.stats.get('interval')} seg")
         print(f"{self._bold('Total hits:')} {self.stats.get('total_logs_read', 0)}")
+        print(f"{self._bold('Hits/sec:')} {self.stats.get('hits_per_sec', 0)}")
         if self.stats.get("top_hits"):
             print(f"{self._bold('Top hits:')}")
             print(f"{self._bold('Hits')} \t {self._bold('Resource')}")
