@@ -19,12 +19,13 @@ class Cli(Display):
     DATE_FORMAT = "%H:%M:%S"
     REFRESH_INTERVAL = 100  # milliseconds
 
-    def __init__(self):
+    def __init__(self, disable_print_welcome_msg: bool = False):
         super().__init__()
         self.alert = None
-        # Starting the display printing the welcome msg
-        self._clear()
-        self._print_welcome_msg()
+        if not disable_print_welcome_msg:
+            # Starting the display printing the welcome msg
+            self._clear()
+            self._print_welcome_msg()
 
     def run(self):
         while True:

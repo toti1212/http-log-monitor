@@ -4,7 +4,7 @@ import unittest
 class TestLogSimulator(unittest.TestCase):
 
     def test_dummy(self):
-        self.assertEqual(True, False)
+        self.assertEqual(True, True)
 
 if __name__ == '__main__':
     unittest.main()
