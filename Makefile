@@ -8,4 +8,4 @@ monitor:
 	http-log-monitor --file="/tmp/access.log" --interval 10 --alert_trigger 10 --alert_time_window 120 
 
 simulator:
-	http-log-simulator --wait_between 900
+	http-log-simulator --wait_between 90
