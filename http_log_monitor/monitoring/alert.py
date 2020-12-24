@@ -21,8 +21,8 @@ class Alert:
 
 
 class AlertMonitor(Thread):
-     """Alert monitor generates alarms if it detects a lot of traffic, 
-     measuring the number of visits in a time window and comparing them with a threshold"""
+    """Alert monitor generates alarms if it detects a lot of traffic, 
+    measuring the number of visits in a time window and comparing them with a threshold"""
     
     def __init__(
         self, alert_queue: Queue, display: Display, time_window: int, trigger: int
@@ -67,7 +67,7 @@ class AlertMonitor(Thread):
         Time window algorithm.
         We need to keep only the entries that are useful in the time_window interval.
         """
-        
+
         current_ts = datetime.now()
         for entry in self.alert_list:
             entry_ts = datetime.strptime(entry.get("datetime"), "%d/%b/%Y:%X")
