@@ -104,6 +104,7 @@ The display module is the module in charge of displaying / sending the informati
 
 - Use a pub / sub architecture to be able to decouple responsibilities in the code and to be able to use event-based programming
 - Add more stats like: top errors, bandwidth, etc.
+- Add more alarm types: rate of errors, suspicious `remote_host`, etc.
 - Improve the way information is displayed. Use a library like [curses](https://docs.python.org/3/library/curses.html) in python to be able to create 2 columns that refresh in real time.
 - Create export modules to add integrations with services that can receive this information (such as Datadog)
 - Be able to create / generate a python library to be installed with a package manager such as `pip` or`Poetry`
